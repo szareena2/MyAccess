@@ -1,0 +1,66 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler,LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+warnings.filterwarnings("ignore")
+
+df=pd.read_csv("./Cancer_Detection.csv")
+df.head(2)
+
+df.shape
+df.info()
+df.describe()
+df.isna().sum()
+df = df.dropna()
+df.duplicated().sum()
+df = df.drop_duplicates()
+
+df.shape
+num_cols = df.iloc[:,1:-1].select_dtypes(exclude='object').columns.values
+num_cols
+le = LabelEncoder()
+for i in df.iloc[:,1:-1].columns:
+    if df[i].dtype == 'object':  
+        df[i] = le.fit_transform(df[i])
+
+plt.figure(figsize=(10,10))
+sns.heatmap(df.corr(),annot=True)
+plt.show()
+# Divide the data into “Attributes” and “labels”
+X = df.iloc[:,1:-1]
+y = df.iloc[:,-1]
+y.value_counts()
+le = LabelEncoder()
+y = le.fit_transform(y)
+
+# Split 80% of the data to the training set while 20% of the data to test set
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+sc = StandardScaler()
+X_train[num_cols] = sc.fit_transform(X_train[num_cols])
+X_test[num_cols] = sc.fit_transform(X_test[num_cols])
+
+X_test
+
+# Create a Linear Regression model and fit it
+lr =LogisticRegression()
+model = lr.fit(X_train,y_train)
+
+# Predicting the data
+y_predict=model.predict(X_test)
+y_predict
+from sklearn.metrics import accuracy_score
+accuracy_score(y_predict,y_test)
+
+DT=DecisionTreeClassifier()
+dt=DT.fit(X_train,y_train)
+dt_pred=dt.predict(X_test)
+dt_acc_score=accuracy_score(y_test,dt_pred)*100
+(dt_acc_score)
